@@ -1,0 +1,9 @@
+{
+  "name": "legado",
+  "version": "0.1.0",
+  "description": "Legado - el lado de la familia en una herencia",
+  "main": "index.html",
+  "type": "module",
+  "engines": { "node": "22.x" },
+  "scripts": { "build": "echo 'Static site'" }
+}

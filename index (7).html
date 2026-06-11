@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#20312B">
+<title>Legado — El lado de la familia en una herencia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ink:#20312B; --forest:#234C3E; --forest-2:#2E5B4B; --sage:#E9F1EC; --sage-2:#DCE9E1;
+  --paper:#F7F9F7; --white:#FFFFFF; --line:#DCE4DE; --mut:#5F6F67; --dim:#93A29A;
+  --terra:#C75B39; --terra-soft:#F7E8E2; --ok:#1D6E56;
+  --ser:'Fraunces',Georgia,serif; --sans:'Inter',-apple-system,sans-serif;
+  --r:16px; --r-sm:11px;
+  --sh:0 1px 2px rgba(32,49,43,.05),0 6px 20px rgba(32,49,43,.07);
+  --sh-2:0 2px 4px rgba(32,49,43,.06),0 14px 34px rgba(32,49,43,.11);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font-family:var(--sans);cursor:pointer}
+input,select,textarea{font-family:var(--sans)}
+.btn{border:0;border-radius:999px;padding:14px 26px;font-size:15px;font-weight:600;transition:transform .13s cubic-bezier(.2,.8,.2,1),box-shadow .2s,filter .15s}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--forest);color:#fff;box-shadow:0 1px 2px rgba(35,76,62,.35),0 6px 18px rgba(35,76,62,.25)}
+.btn-p:hover{filter:brightness(1.06)}
+.btn-s{background:var(--white);color:var(--ink);border:1.5px solid var(--line)}
+.btn-s:hover{background:var(--sage)}
+.btn-t{background:var(--terra);color:#fff;box-shadow:0 1px 2px rgba(199,91,57,.35),0 6px 18px rgba(199,91,57,.25)}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.inp{width:100%;padding:14px 16px;border:1.5px solid var(--line);border-radius:var(--r-sm);font-size:15px;background:var(--white);transition:border-color .15s,box-shadow .15s}
+.inp:focus{outline:none;border-color:var(--forest);box-shadow:0 0 0 3px rgba(35,76,62,.12)}
+.scr{display:none;min-height:100vh}
+.scr.on{display:block;animation:in .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px calc(40px + var(--safe-b))}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0;}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:2.5px;font-size:15px;color:var(--ink)}
+.mark{width:34px;height:34px;border-radius:50%;background:var(--forest);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--ser);font-weight:700;font-size:17px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600}
+.h-ser{font-family:var(--ser);font-weight:600;line-height:1.15}
+.toast{position:fixed;left:50%;bottom:calc(26px + var(--safe-b));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;z-index:9999;pointer-events:none;box-shadow:var(--sh-2);max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.itemcard{display:flex;gap:14px;padding:14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--white);align-items:center}
+.itemcard img{width:74px;height:74px;object-fit:cover;border-radius:9px;background:var(--sage);flex-shrink:0}
+.spin{width:20px;height:20px;border:2.5px solid var(--sage-2);border-top-color:var(--forest);border-radius:50%;animation:sp .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.via{border:2px solid var(--line);border-radius:var(--r);padding:24px 22px;background:var(--white);cursor:pointer;transition:border-color .15s,box-shadow .2s,transform .15s}
+.via:hover{transform:translateY(-2px);box-shadow:var(--sh-2)}
+.via.sel{border-color:var(--forest);background:var(--sage)}
+@media(max-width:560px){.vias{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+
+<!-- ════ LANDING ════ -->
+<div class="scr on" id="s-landing">
+  <div style="background:var(--ink);color:#fff;">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand" style="color:#fff"><div class="mark" style="background:#fff;color:var(--forest)">L</div>LEGADO</div>
+        <button class="btn btn-s" style="padding:9px 20px;font-size:13.5px" onclick="show('s-auth')">Acceder</button>
+      </div>
+      <div style="padding:52px 0 64px">
+        <div class="chip" style="background:rgba(255,255,255,.12);color:#C9D6CF;margin-bottom:20px">Barcelona · piloto 2026</div>
+        <h1 class="h-ser" style="font-size:clamp(34px,7vw,52px);color:#fff;max-width:560px">El lado de la familia en una herencia.</h1>
+        <p style="font-size:16.5px;color:#C9D6CF;line-height:1.6;max-width:480px;margin-top:18px">Fotografía el piso. Nuestra IA cataloga y tasa cada objeto con precios reales de mercado. Tú eliges: cerrar en 48 horas o maximizar el valor.</p>
+        <div style="display:flex;gap:12px;margin-top:30px;flex-wrap:wrap">
+          <button class="btn btn-t" onclick="show('s-auth');authMode='signup';renderAuth()">Empezar gratis →</button>
+          <button class="btn" style="background:rgba(255,255,255,.1);color:#fff" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">Cómo funciona</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap" id="how" style="padding-top:48px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">
+      <div class="card" style="padding:22px">
+        <div style="width:42px;height:42px;border-radius:12px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px">📷</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">1 · Fotografía</div>
+        <div style="font-size:13px;color:var(--mut);line-height:1.5">Recorre el piso con el móvil. Una foto por objeto o por rincón.</div>
+      </div>
+      <div class="card" style="padding:22px">
+        <div style="width:42px;height:42px;border-radius:12px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px">✨</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">2 · La IA tasa</div>
+        <div style="font-size:13px;color:var(--mut);line-height:1.5">Cataloga cada pieza y propone un rango de precio con criterio de mercado.</div>
+      </div>
+      <div class="card" style="padding:22px">
+        <div style="width:42px;height:42px;border-radius:12px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px">⚖️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">3 · Tú eliges</div>
+        <div style="font-size:13px;color:var(--mut);line-height:1.5">Oferta por el lote en 48h, o vendemos por ti y cobras más. Tu ritmo.</div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:40px 0 10px;font-size:12.5px;color:var(--dim)">Legado · concept piloto · Barcelona</div>
+  </div>
+</div>
+
+<!-- ════ AUTH ════ -->
+<div class="scr" id="s-auth">
+  <div class="wrap" style="max-width:440px">
+    <div class="topbar"><div class="brand" onclick="show('s-landing')" style="cursor:pointer"><div class="mark">L</div>LEGADO</div></div>
+    <div class="card" style="padding:30px 26px;margin-top:8vh">
+      <h2 class="h-ser" id="auth-title" style="font-size:26px;margin-bottom:6px">Crea tu cuenta</h2>
+      <p id="auth-sub" style="font-size:14px;color:var(--mut);margin-bottom:22px">Gratis. Empieza a inventariar en 2 minutos.</p>
+      <input class="inp" id="a-email" type="email" placeholder="Tu email" style="margin-bottom:12px">
+      <input class="inp" id="a-pass" type="password" placeholder="Contraseña" style="margin-bottom:18px">
+      <button class="btn btn-p" style="width:100%" id="auth-btn" onclick="doAuth()">Crear cuenta</button>
+      <div style="text-align:center;margin-top:16px;font-size:13.5px;color:var(--mut)">
+        <span id="auth-switch-txt">¿Ya tienes cuenta?</span>
+        <a href="#" id="auth-switch" onclick="toggleAuth();return false" style="color:var(--forest);font-weight:600">Accede</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ EXPEDIENTES (home) ════ -->
+<div class="scr" id="s-home">
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand"><div class="mark">L</div>LEGADO</div>
+      <button class="btn btn-s" style="padding:8px 18px;font-size:13px" onclick="logout()">Salir</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:18px 0 20px;flex-wrap:wrap">
+      <div>
+        <h2 class="h-ser" style="font-size:30px">Tus expedientes</h2>
+        <p style="font-size:14px;color:var(--mut);margin-top:4px">Cada herencia, en un solo lugar.</p>
+      </div>
+      <button class="btn btn-p" onclick="newExp()">+ Nueva herencia</button>
+    </div>
+    <div id="exp-list" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+</div>
+
+<!-- ════ EXPEDIENTE (inventario) ════ -->
+<div class="scr" id="s-exp">
+  <div class="wrap">
+    <div class="topbar">
+      <button class="btn btn-s" style="padding:8px 16px;font-size:13px" onclick="show('s-home');loadExps()">← Expedientes</button>
+      <div class="brand"><div class="mark">L</div></div>
+    </div>
+    <div id="exp-head" style="margin:10px 0 18px"></div>
+    <div class="card" style="padding:20px;margin-bottom:16px;text-align:center;border-style:dashed;border-width:1.5px;background:var(--sage)">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">Añade objetos al inventario</div>
+      <div style="font-size:13px;color:var(--mut);margin-bottom:14px">Haz una foto y la IA lo catalogará y tasará al momento.</div>
+      <input type="file" id="cam" accept="image/*" capture="environment" multiple style="display:none" onchange="onPhotos(this.files)">
+      <button class="btn btn-p" onclick="document.getElementById('cam').click()">📷 Fotografiar objeto</button>
+    </div>
+    <div id="items" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="exp-cta" style="margin-top:22px"></div>
+  </div>
+</div>
+
+<!-- ════ DOS CAMINOS ════ -->
+<div class="scr" id="s-vias">
+  <div class="wrap">
+    <div class="topbar">
+      <button class="btn btn-s" style="padding:8px 16px;font-size:13px" onclick="show('s-exp')">← Inventario</button>
+      <div class="brand"><div class="mark">L</div></div>
+    </div>
+    <h2 class="h-ser" style="font-size:28px;margin:14px 0 6px">¿Cómo quieres cerrarlo?</h2>
+    <p style="font-size:14px;color:var(--mut);margin-bottom:22px">Dos caminos. Los dos del lado de tu familia.</p>
+    <div class="vias" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="via" id="via-rapida" onclick="selVia('rapida')">
+        <div class="chip" style="background:var(--terra-soft);color:var(--terra);margin-bottom:14px">⚡ Vía rápida</div>
+        <div class="h-ser" style="font-size:30px" id="oferta-rapida">—</div>
+        <div style="font-size:13px;color:var(--mut);margin:4px 0 16px">oferta por el lote completo</div>
+        <div style="font-size:13.5px;line-height:1.7;color:var(--ink)">✓ Cobras en <b>48 horas</b><br>✓ Vaciado y donación incluidos<br>✓ Piso vacío esta semana<br>✓ Certeza total, cero gestión</div>
+      </div>
+      <div class="via" id="via-consig" onclick="selVia('consignacion')">
+        <div class="chip" style="background:var(--sage);color:var(--forest);margin-bottom:14px">🌿 Consignación</div>
+        <div class="h-ser" style="font-size:30px" id="oferta-consig">—</div>
+        <div style="font-size:13px;color:var(--mut);margin:4px 0 16px">estimado neto para ti</div>
+        <div style="font-size:13.5px;line-height:1.7;color:var(--ink)">✓ Hasta <b>2× más valor</b><br>✓ Vendemos por ti (subasta y marketplaces)<br>✓ Cobras según se vende, 2–8 semanas<br>✓ Cada venta visible en tu panel</div>
+      </div>
+    </div>
+    <button class="btn btn-p" id="via-btn" style="width:100%;margin-top:20px;opacity:.5" disabled onclick="confirmVia()">Elige un camino</button>
+    <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:12px">Las cifras son estimaciones de la IA. Un especialista las confirmará contigo sin compromiso.</p>
+  </div>
+</div>
+
+<!-- ════ CONFIRMACIÓN ════ -->
+<div class="scr" id="s-done">
+  <div class="wrap" style="max-width:460px;text-align:center;padding-top:12vh">
+    <div style="width:74px;height:74px;border-radius:50%;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:34px;margin:0 auto 20px">🤝</div>
+    <h2 class="h-ser" style="font-size:28px;margin-bottom:10px">Recibido.</h2>
+    <p style="font-size:15px;color:var(--mut);line-height:1.6" id="done-msg">Te contactamos en menos de 24 horas para confirmar la valoración y los siguientes pasos.</p>
+    <button class="btn btn-p" style="margin-top:28px" onclick="show('s-home');loadExps()">Volver a mis expedientes</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://rjjfuzeapeasgdobnwbp.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqamZ1emVhcGVhc2dkb2Jud2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MjU4MjAsImV4cCI6MjA5MzQwMTgyMH0.o0qZIxro_1PMM_o1PCFnrpWSoiMqiab7pWyOBZlSjRE';
+let sb=null,user=null,curExp=null,curItems=[],selVia_=null,authMode='signup';
+
+function escH(s){return s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function $(id){return document.getElementById(id)}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2800)}
+const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
+
+// ── Auth ──
+function renderAuth(){
+  const su=authMode==='signup';
+  $('auth-title').textContent=su?'Crea tu cuenta':'Bienvenido de nuevo';
+  $('auth-sub').textContent=su?'Gratis. Empieza a inventariar en 2 minutos.':'Accede a tus expedientes.';
+  $('auth-btn').textContent=su?'Crear cuenta':'Acceder';
+  $('auth-switch-txt').textContent=su?'¿Ya tienes cuenta?':'¿Aún no tienes cuenta?';
+  $('auth-switch').textContent=su?'Accede':'Créala gratis';
+}
+function toggleAuth(){authMode=authMode==='signup'?'login':'signup';renderAuth()}
+async function doAuth(){
+  const email=$('a-email').value.trim(),pass=$('a-pass').value;
+  if(!email||!pass){toast('Rellena email y contraseña');return}
+  $('auth-btn').innerHTML='<span class="spin"></span>';
+  try{
+    let r;
+    if(authMode==='signup'){ r=await sb.auth.signUp({email,password:pass}); if(!r.error&&!r.data.session){ r=await sb.auth.signInWithPassword({email,password:pass}); } }
+    else r=await sb.auth.signInWithPassword({email,password:pass});
+    if(r.error)throw r.error;
+    user=r.data.user||r.data.session?.user;
+    if(!user)throw new Error('Revisa tu email para confirmar la cuenta');
+    enter();
+  }catch(e){toast(e.message||'No se pudo acceder')}
+  renderAuth();
+}
+async function logout(){await sb.auth.signOut();user=null;show('s-landing')}
+function enter(){show('s-home');loadExps()}
+
+// ── Expedientes ──
+async function loadExps(){
+  const el=$('exp-list');el.innerHTML='<div style="text-align:center;padding:30px"><span class="spin"></span></div>';
+  const {data,error}=await sb.from('legado_expedientes').select('*').order('created_at',{ascending:false});
+  if(error){el.innerHTML='<div style="color:var(--terra);font-size:13px">Error: '+escH(error.message)+'</div>';return}
+  if(!data||!data.length){
+    el.innerHTML='<div class="card" style="padding:34px;text-align:center"><div style="font-size:30px;margin-bottom:10px">🏠</div><div style="font-weight:700;margin-bottom:6px">Tu primera herencia</div><div style="font-size:13.5px;color:var(--mut)">Crea un expediente y empieza a fotografiar el piso.</div></div>';return}
+  el.innerHTML=data.map(e=>{
+    const st={inventario:['En inventario','var(--sage)','var(--forest)'],rapida:['Vía rápida solicitada','var(--terra-soft)','var(--terra)'],consignacion:['En consignación','var(--sage)','var(--forest)']}[e.via||'inventario']||['En inventario','var(--sage)','var(--forest)'];
+    return `<div class="card" style="padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer" onclick="openExp('${e.id}')">
+      <div style="min-width:0">
+        <div style="font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(e.direccion)}</div>
+        <div style="font-size:12.5px;color:var(--mut);margin-top:3px">${e.n_items||0} objetos · valor est. ${fE(e.valor_est||0)}</div>
+      </div>
+      <span class="chip" style="background:${st[1]};color:${st[2]};flex-shrink:0">${st[0]}</span>
+    </div>`}).join('');
+}
+async function newExp(){
+  const dir=prompt('Dirección del piso (ej. C/ Provença 214, 3º 2ª):');
+  if(!dir||!dir.trim())return;
+  const {data,error}=await sb.from('legado_expedientes').insert({user_id:user.id,direccion:dir.trim().slice(0,120),estado:'inventario'}).select().single();
+  if(error){toast('No se pudo crear');return}
+  openExp(data.id,data);
+}
+async function openExp(id,row){
+  if(!row){const {data}=await sb.from('legado_expedientes').select('*').eq('id',id).single();row=data}
+  curExp=row;
+  const {data:items}=await sb.from('legado_items').select('*').eq('expediente_id',id).order('created_at');
+  curItems=items||[];
+  show('s-exp');renderExp();
+}
+function totRange(){let a=0,b=0;curItems.forEach(i=>{a+=i.valor_min||0;b+=i.valor_max||0});return[a,b]}
+function renderExp(){
+  const [a,b]=totRange();
+  $('exp-head').innerHTML=`
+    <h2 class="h-ser" style="font-size:26px">${escH(curExp.direccion)}</h2>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <div class="card" style="padding:12px 18px"><div style="font-size:11px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Objetos</div><div class="h-ser" style="font-size:22px">${curItems.length}</div></div>
+      <div class="card" style="padding:12px 18px"><div style="font-size:11px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Valor estimado IA</div><div class="h-ser" style="font-size:22px;color:var(--forest)">${a||b?fE(a)+' – '+fE(b):'—'}</div></div>
+    </div>`;
+  $('items').innerHTML=curItems.map(i=>`
+    <div class="itemcard">
+      ${i.foto?`<img src="${i.foto}" alt="">`:`<div style="width:74px;height:74px;border-radius:9px;background:var(--sage);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">📦</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14.5px">${escH(i.nombre)}</div>
+        <div style="font-size:12.5px;color:var(--mut);margin-top:2px">${escH(i.categoria||'')}</div>
+        <div style="font-size:13px;color:var(--forest);font-weight:700;margin-top:4px">${fE(i.valor_min)} – ${fE(i.valor_max)}</div>
+      </div>
+      <button onclick="delItem('${i.id}')" style="background:none;border:0;color:var(--dim);font-size:18px;padding:6px">×</button>
+    </div>`).join('');
+  $('exp-cta').innerHTML=curItems.length>=1?`<button class="btn btn-t" style="width:100%" onclick="goVias()">Ver mis dos caminos →</button>`:'';
+}
+async function delItem(id){
+  await sb.from('legado_items').delete().eq('id',id);
+  curItems=curItems.filter(i=>i.id!==id);renderExp();syncExp();
+}
+async function syncExp(){
+  const [a,b]=totRange();
+  await sb.from('legado_expedientes').update({n_items:curItems.length,valor_est:Math.round((a+b)/2)}).eq('id',curExp.id);
+}
+
+// ── Fotos + IA ──
+function compress(file){return new Promise(res=>{
+  const img=new Image();img.onload=()=>{
+    const M=760,k=Math.min(1,M/Math.max(img.width,img.height));
+    const c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    res(c.toDataURL('image/jpeg',.72));
+  };img.src=URL.createObjectURL(file);
+})}
+async function onPhotos(files){
+  if(!files||!files.length)return;
+  for(const f of files){
+    if(f.size>15*1024*1024){toast('Foto demasiado grande');continue}
+    const ph=document.createElement('div');ph.className='itemcard';
+    ph.innerHTML='<div style="width:74px;height:74px;border-radius:9px;background:var(--sage);display:flex;align-items:center;justify-content:center"><span class="spin"></span></div><div style="font-size:13.5px;color:var(--mut)">La IA está catalogando…</div>';
+    $('items').prepend(ph);
+    try{
+      const dataUrl=await compress(f);
+      let v=null;
+      try{
+        const r=await fetch('/api/value',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});
+        if(r.ok)v=await r.json();
+      }catch(e){}
+      if(!v||!v.nombre){ v={nombre:'Objeto por identificar',categoria:'Revisar',valor_min:0,valor_max:0}; toast('No pude tasarlo — edítalo a mano'); }
+      const {data,error}=await sb.from('legado_items').insert({
+        expediente_id:curExp.id,user_id:user.id,foto:dataUrl,
+        nombre:String(v.nombre).slice(0,80),categoria:String(v.categoria||'').slice(0,40),
+        valor_min:Math.max(0,Math.min(999999,+v.valor_min||0)),valor_max:Math.max(0,Math.min(999999,+v.valor_max||0))
+      }).select().single();
+      if(error)throw error;
+      curItems.unshift(data);ph.remove();renderExp();syncExp();
+    }catch(e){ph.remove();toast('Error guardando el objeto')}
+  }
+  $('cam').value='';
+}
+
+// ── Dos caminos ──
+function goVias(){
+  const [a,b]=totRange(),mid=(a+b)/2;
+  $('oferta-rapida').textContent=fE(Math.round(mid*0.35));
+  $('oferta-consig').textContent='~'+fE(Math.round(mid*0.65));
+  selVia_=null;$('via-rapida').classList.remove('sel');$('via-consig').classList.remove('sel');
+  const btn=$('via-btn');btn.disabled=true;btn.style.opacity=.5;btn.textContent='Elige un camino';
+  show('s-vias');
+}
+function selVia(v){
+  selVia_=v;
+  $('via-rapida').classList.toggle('sel',v==='rapida');
+  $('via-consig').classList.toggle('sel',v==='consignacion');
+  const btn=$('via-btn');btn.disabled=false;btn.style.opacity=1;
+  btn.textContent=v==='rapida'?'Solicitar oferta en firme →':'Empezar la consignación →';
+}
+async function confirmVia(){
+  if(!selVia_)return;
+  const [a,b]=totRange(),mid=(a+b)/2;
+  const oferta=selVia_==='rapida'?Math.round(mid*0.35):Math.round(mid*0.65);
+  const {error}=await sb.from('legado_expedientes').update({via:selVia_,oferta,estado:'solicitado'}).eq('id',curExp.id);
+  if(error){toast('No se pudo guardar');return}
+  $('done-msg').textContent=selVia_==='rapida'
+    ?`Hemos recibido tu solicitud de oferta en firme (estimación: ${fE(oferta)}). Un especialista la confirmará contigo en menos de 24 horas.`
+    :`Empezamos la consignación (estimado neto: ~${fE(oferta)}). Te contactamos en menos de 24 horas para organizar la recogida y la venta.`;
+  show('s-done');
+}
+
+// ── Init ──
+window.addEventListener('load',async()=>{
+  sb=window.supabase.createClient(SB_URL,SB_KEY);
+  const {data}=await sb.auth.getSession();
+  if(data&&data.session){user=data.session.user;enter()}
+});
+</script>
+</body>
+</html>
