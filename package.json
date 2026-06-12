@@ -1,7 +1,7 @@
 {
-  "name": "legado",
+  "name": "vaci",
   "version": "0.1.0",
-  "description": "Legado - el lado de la familia en una herencia",
+  "description": "Vaci - descubre el dinero escondido en tu casa",
   "main": "index.html",
   "type": "module",
   "engines": { "node": "22.x" },
