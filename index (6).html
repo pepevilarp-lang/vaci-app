@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1116">
+<title>Vaci — Descubre el dinero escondido en tu casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ink:#0E1116; --ink-2:#161B22; --ink-3:#1F2630;
+  --paper:#F7F8F9; --white:#FFFFFF; --line:#E6E9ED; --line-2:#EEF1F4;
+  --t1:#0E1116; --t2:#525B66; --t3:#8B95A1;
+  --acc:#10B981; --acc-d:#0B8F63; --acc-soft:#E7F8F1;
+  --amber:#D97706; --amber-soft:#FDF3E3; --blue:#3B82F6; --blue-soft:#EBF2FE;
+  --rose:#E11D48; --rose-soft:#FDEAEF; --slate-soft:#EEF1F4;
+  --sans:'Inter',-apple-system,sans-serif;
+  --r:20px; --r-s:13px;
+  --sh:0 1px 2px rgba(14,17,22,.04),0 6px 22px rgba(14,17,22,.06);
+  --sh2:0 2px 4px rgba(14,17,22,.05),0 16px 40px rgba(14,17,22,.10);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:var(--paper);color:var(--t1);-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font-family:var(--sans);cursor:pointer;border:0}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.btn{border-radius:999px;padding:15px 28px;font-size:15px;font-weight:600;transition:transform .13s var(--ease),box-shadow .2s,filter .15s,background .15s}
+.btn:active{transform:scale(.96)}
+.btn-p{background:var(--acc);color:#fff;box-shadow:0 1px 2px rgba(16,185,129,.4),0 8px 22px rgba(16,185,129,.28)}
+.btn-p:hover{filter:brightness(1.05)}
+.btn-dark{background:var(--ink);color:#fff;box-shadow:0 8px 22px rgba(14,17,22,.25)}
+.btn-s{background:var(--white);color:var(--t1);border:1.5px solid var(--line)}
+.btn-s:hover{background:var(--line-2)}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.inp{width:100%;padding:15px 17px;border:1.5px solid var(--line);border-radius:var(--r-s);font-size:15px;background:var(--white);transition:.15s}
+.inp:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3.5px rgba(16,185,129,.14)}
+.scr{display:none;min-height:100vh}
+.scr.on{display:block;animation:in .32s var(--ease)}
+@keyframes in{from{opacity:0;transform:translateY(9px)}to{opacity:1}}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px calc(44px + var(--safe-b))}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+.logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:19px;letter-spacing:-.03em}
+.logo .dot{width:11px;height:11px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px rgba(16,185,129,.6)}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4.5px 12px;border-radius:999px;font-size:12px;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(26px + var(--safe-b));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:13px 24px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;z-index:9999;pointer-events:none;box-shadow:var(--sh2);max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.spin{width:20px;height:20px;border:2.5px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:sp .65s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+.seg{display:flex;gap:5px;flex-wrap:wrap}
+.seg button{padding:6.5px 12px;border-radius:999px;font-size:12px;font-weight:600;background:var(--slate-soft);color:var(--t2);transition:.14s var(--ease);position:relative}
+.seg button:active{transform:scale(.94)}
+.seg button.v{background:var(--acc);color:#fff}
+.seg button.c{background:var(--blue);color:#fff}
+.seg button.d{background:var(--amber);color:#fff}
+.seg button.r{background:#64748B;color:#fff}
+.avs{display:inline-flex;margin-left:5px;vertical-align:middle}
+.avs span{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.3);border:1.5px solid rgba(255,255,255,.7);font-size:8.5px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:-5px;color:#fff}
+.itemrow{display:flex;gap:13px;padding:14px;background:var(--white);border:1px solid var(--line);border-radius:16px;align-items:flex-start;animation:in .3s var(--ease)}
+.itemrow img{width:80px;height:80px;object-fit:cover;border-radius:11px;background:var(--slate-soft);flex-shrink:0}
+.mem{padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;background:var(--white);border:1.5px solid var(--line);color:var(--t2);transition:.14s}
+.mem.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.via{border:2px solid var(--line);border-radius:var(--r);padding:24px 22px;background:var(--white);cursor:pointer;transition:.18s var(--ease)}
+.via:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.via.sel{border-color:var(--acc);background:var(--acc-soft)}
+.bar{height:9px;border-radius:99px;background:var(--line-2);overflow:hidden;display:flex}
+.modal-bg{position:fixed;inset:0;background:rgba(14,17,22,.55);backdrop-filter:blur(5px);z-index:1000;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:.22s}
+.modal-bg.on{opacity:1}
+.modal{background:var(--white);border-radius:24px 24px 0 0;padding:26px 22px calc(28px + var(--safe-b));width:100%;max-width:560px;transform:translateY(30px);transition:.26s var(--ease)}
+.modal-bg.on .modal{transform:none}
+@media(min-width:600px){.modal-bg{align-items:center}.modal{border-radius:24px;padding-bottom:28px}}
+@media(max-width:560px){.g2{grid-template-columns:1fr!important}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ════ LANDING ════ -->
+<div class="scr on" id="s-landing">
+  <div style="background:var(--ink);color:#fff">
+    <div class="wrap">
+      <div class="topbar">
+        <div class="logo" style="color:#fff"><span class="dot"></span>vaci</div>
+        <button class="btn btn-s" style="padding:9px 20px;font-size:13.5px;background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.18)" onclick="show('s-auth')">Acceder</button>
+      </div>
+      <div style="padding:48px 0 30px">
+        <div class="chip" style="background:rgba(16,185,129,.15);color:#5EEAD4;margin-bottom:18px">✦ Tu casa esconde dinero</div>
+        <h1 style="font-size:clamp(36px,7.5vw,58px);font-weight:800;letter-spacing:-.035em;line-height:1.05;max-width:600px">Escanea tu casa.<br>Descubre cuánto vale.<br><span style="color:var(--acc)">Cobra.</span></h1>
+        <p style="font-size:16.5px;color:#9BA6B2;line-height:1.6;max-width:470px;margin-top:18px">La IA de Vaci inventaría y tasa lo que hay dentro de una vivienda con precios reales de mercado. Tú decides: cobrar en 48 horas o maximizar el valor.</p>
+      </div>
+      <div style="padding-bottom:54px">
+        <input type="file" id="demo-cam" accept="image/*" capture="environment" style="display:none" onchange="demoScan(this.files)">
+        <button class="btn btn-p" style="font-size:16px;padding:17px 32px" onclick="document.getElementById('demo-cam').click()">📷 Escanea tu primer objeto — gratis</button>
+        <div style="font-size:12.5px;color:#6B7684;margin-top:12px">Sin cuenta. Sin datos. Una foto y verás la magia.</div>
+        <div id="demo-result" style="margin-top:22px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap" style="padding-top:44px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+      <div class="card" style="padding:24px"><div style="font-size:26px;margin-bottom:12px">🔍</div><div style="font-weight:700;margin-bottom:6px">Inventario con IA</div><div style="font-size:13.5px;color:var(--t2);line-height:1.55">Una foto por objeto. Nombre, categoría y precio de mercado en 3 segundos.</div></div>
+      <div class="card" style="padding:24px"><div style="font-size:26px;margin-bottom:12px">🗳️</div><div style="font-weight:700;margin-bottom:6px">Decide en familia</div><div style="font-size:13.5px;color:var(--t2);line-height:1.55">Vender, conservar, donar o reciclar — con votos y comentarios, sin broncas.</div></div>
+      <div class="card" style="padding:24px"><div style="font-size:26px;margin-bottom:12px">⚡</div><div style="font-weight:700;margin-bottom:6px">Dos caminos al dinero</div><div style="font-size:13.5px;color:var(--t2);line-height:1.55">Oferta por el lote en 48h, o vendemos por ti y recuperas más.</div></div>
+    </div>
+    <div style="text-align:center;padding:40px 0 8px;font-size:12.5px;color:var(--t3)">vaci · Barcelona · piloto 2026</div>
+  </div>
+</div>
+
+<!-- ════ AUTH ════ -->
+<div class="scr" id="s-auth">
+  <div class="wrap" style="max-width:440px">
+    <div class="topbar"><div class="logo" onclick="show('s-landing')" style="cursor:pointer"><span class="dot"></span>vaci</div></div>
+    <div class="card" style="padding:30px 26px;margin-top:7vh">
+      <div id="auth-pending"></div>
+      <h2 id="auth-title" style="font-size:25px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px">Crea tu cuenta</h2>
+      <p id="auth-sub" style="font-size:14px;color:var(--t2);margin-bottom:22px">Gratis. Tu inventario te espera.</p>
+      <input class="inp" id="a-email" type="email" placeholder="Tu email" style="margin-bottom:12px">
+      <input class="inp" id="a-pass" type="password" placeholder="Contraseña" style="margin-bottom:18px">
+      <button class="btn btn-p" style="width:100%" id="auth-btn" onclick="doAuth()">Crear cuenta</button>
+      <div style="text-align:center;margin-top:16px;font-size:13.5px;color:var(--t2)">
+        <span id="auth-sw-txt">¿Ya tienes cuenta?</span>
+        <a href="#" id="auth-sw" onclick="toggleAuth();return false" style="color:var(--acc-d);font-weight:600">Accede</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ HOME / DASHBOARD ════ -->
+<div class="scr" id="s-home">
+  <div style="background:var(--ink);color:#fff">
+    <div class="wrap" style="padding-bottom:0">
+      <div class="topbar">
+        <div class="logo" style="color:#fff"><span class="dot"></span>vaci</div>
+        <button class="btn btn-s" style="padding:8px 18px;font-size:13px;background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.16)" onclick="logout()">Salir</button>
+      </div>
+      <div style="padding:18px 0 34px">
+        <div style="font-size:12.5px;font-weight:600;color:#7E8896;text-transform:uppercase;letter-spacing:1.5px">Valor descubierto</div>
+        <div class="num" id="h-total" style="font-size:clamp(42px,10vw,58px);font-weight:800;letter-spacing:-.04em;color:#fff;line-height:1.1">0 €</div>
+        <div id="h-sub" style="font-size:13.5px;color:#9BA6B2;margin-top:6px">Escanea tu primer objeto para empezar.</div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap" style="padding-top:0">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;transform:translateY(-22px)">
+      <div class="card" style="padding:14px 16px"><div class="num" id="k-items" style="font-size:22px;font-weight:800">0</div><div style="font-size:11.5px;color:var(--t2);font-weight:600">objetos</div></div>
+      <div class="card" style="padding:14px 16px"><div class="num" id="k-vender" style="font-size:22px;font-weight:800;color:var(--acc-d)">0</div><div style="font-size:11.5px;color:var(--t2);font-weight:600">a la venta</div></div>
+      <div class="card" style="padding:14px 16px"><div class="num" id="k-pend" style="font-size:22px;font-weight:800;color:var(--amber)">0</div><div style="font-size:11.5px;color:var(--t2);font-weight:600">por decidir</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0 14px">
+      <div style="font-size:17px;font-weight:700;letter-spacing:-.01em">Tus espacios</div>
+      <button class="btn btn-dark" style="padding:10px 20px;font-size:13.5px" onclick="newProj()">+ Nuevo espacio</button>
+    </div>
+    <div id="proj-list" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+</div>
+
+<!-- ════ PROYECTO ════ -->
+<div class="scr" id="s-proj">
+  <div class="wrap">
+    <div class="topbar">
+      <button class="btn btn-s" style="padding:8px 16px;font-size:13px" onclick="show('s-home');loadHome()">← Espacios</button>
+      <div class="logo"><span class="dot"></span></div>
+    </div>
+    <div id="p-head"></div>
+    <div id="p-members" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 16px"></div>
+    <div id="p-rooms" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div class="card" style="padding:18px;margin-bottom:16px;text-align:center;border-style:dashed;border-width:1.5px;background:var(--acc-soft);border-color:#A7E8D0">
+      <input type="file" id="cam" accept="image/*" capture="environment" multiple style="display:none" onchange="onPhotos(this.files)">
+      <button class="btn btn-p" onclick="document.getElementById('cam').click()">📷 Escanear objeto en <span id="cur-room-lbl">Salón</span></button>
+      <div style="font-size:12px;color:var(--t2);margin-top:9px">Una foto = un objeto. La IA lo tasa al momento.</div>
+    </div>
+    <div id="p-items" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div id="p-cta" style="margin-top:22px"></div>
+  </div>
+</div>
+
+<!-- ════ CAMINOS ════ -->
+<div class="scr" id="s-vias">
+  <div class="wrap">
+    <div class="topbar">
+      <button class="btn btn-s" style="padding:8px 16px;font-size:13px" onclick="show('s-proj')">← Inventario</button>
+      <div class="logo"><span class="dot"></span></div>
+    </div>
+    <h2 style="font-size:27px;font-weight:800;letter-spacing:-.02em;margin:12px 0 4px">Tu dinero, dos caminos.</h2>
+    <p style="font-size:14px;color:var(--t2);margin-bottom:8px">Sobre <span id="v-n" style="font-weight:700;color:var(--t1)">0</span> objetos marcados “vender” · valor estimado <span id="v-base" style="font-weight:700;color:var(--t1)">0€</span></p>
+    <div class="bar" style="margin:10px 0 22px"><div id="v-barfill" style="background:var(--acc);width:0%"></div></div>
+    <div class="g2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="via" id="via-r" onclick="selVia('rapida')">
+        <div class="chip" style="background:var(--ink);color:#fff;margin-bottom:14px">⚡ Cobro rápido</div>
+        <div class="num" id="o-rapida" style="font-size:32px;font-weight:800;letter-spacing:-.03em">—</div>
+        <div style="font-size:12.5px;color:var(--t2);margin:3px 0 14px">oferta por el lote · en firme</div>
+        <div style="font-size:13.5px;line-height:1.8">✓ Cobras en <b>48 horas</b><br>✓ Recogida incluida<br>✓ Certeza del 100%<br>✓ Cero gestión</div>
+      </div>
+      <div class="via" id="via-m" onclick="selVia('maximizar')">
+        <div class="chip" style="background:var(--acc-soft);color:var(--acc-d);margin-bottom:14px">📈 Maximizar valor</div>
+        <div class="num" id="o-max" style="font-size:32px;font-weight:800;letter-spacing:-.03em;color:var(--acc-d)">—</div>
+        <div style="font-size:12.5px;color:var(--t2);margin:3px 0 14px">estimado neto · 2–8 semanas</div>
+        <div style="font-size:13.5px;line-height:1.8">✓ Hasta <b>2× más</b> que la oferta<br>✓ Subastas y marketplaces<br>✓ ~85% prob. de venta<br>✓ Cada venta, visible aquí</div>
+      </div>
+    </div>
+    <button class="btn btn-p" id="via-btn" style="width:100%;margin-top:20px;opacity:.45" disabled onclick="confirmVia()">Elige un camino</button>
+    <p style="text-align:center;font-size:12px;color:var(--t3);margin-top:12px">Cifras estimadas por la IA. Un especialista de Vaci las confirma contigo, sin compromiso.</p>
+  </div>
+</div>
+
+<!-- ════ CIERRE / INFORME ════ -->
+<div class="scr" id="s-done">
+  <div class="wrap" style="max-width:480px;padding-top:7vh">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:78px;height:78px;border-radius:50%;background:var(--acc-soft);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 18px">🎉</div>
+      <h2 style="font-size:27px;font-weight:800;letter-spacing:-.02em">Dinero descubierto.</h2>
+      <p style="font-size:14px;color:var(--t2);margin-top:6px" id="done-sub"></p>
+    </div>
+    <div class="card" style="padding:24px" id="done-card"></div>
+    <button class="btn btn-p" style="width:100%;margin-top:18px" onclick="shareReport()">Compartir mi descubrimiento</button>
+    <button class="btn btn-s" style="width:100%;margin-top:10px" onclick="show('s-home');loadHome()">Volver a mis espacios</button>
+  </div>
+</div>
+
+<!-- modal edición -->
+<div class="modal-bg" id="m-edit" style="display:none" onclick="if(event.target===this)closeEdit()">
+  <div class="modal">
+    <div style="font-size:18px;font-weight:700;margin-bottom:16px">Editar objeto</div>
+    <input class="inp" id="e-nombre" placeholder="Nombre" style="margin-bottom:10px">
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <input class="inp" id="e-min" type="number" placeholder="Valor mín €">
+      <input class="inp" id="e-max" type="number" placeholder="Valor máx €">
+    </div>
+    <textarea class="inp" id="e-coment" placeholder="Comentario para la familia (opcional)" rows="2" style="margin-bottom:16px;resize:none"></textarea>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-s" style="flex:1" onclick="closeEdit()">Cancelar</button>
+      <button class="btn btn-p" style="flex:1" onclick="saveEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL='https://rjjfuzeapeasgdobnwbp.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqamZ1emVhcGVhc2dkb2Jud2JwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4MjU4MjAsImV4cCI6MjA5MzQwMTgyMH0.o0qZIxro_1PMM_o1PCFnrpWSoiMqiab7pWyOBZlSjRE';
+const ROOMS=['Salón','Cocina','Dormitorio','Baño','Terraza','Trastero','Otro'];
+const DEC={vender:{l:'Vender',cls:'v'},conservar:{l:'Conservar',cls:'c'},donar:{l:'Donar',cls:'d'},reciclar:{l:'Reciclar',cls:'r'}};
+let sb=null,user=null,proj=null,items=[],curRoom='Salón',activeMember=null,selVia_=null,authMode='signup',editItem=null;
+
+const $=id=>document.getElementById(id);
+const escH=s=>s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const fE=n=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n||0);
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));$(id).classList.add('on');window.scrollTo(0,0)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2800)}
+function countUp(el,to,ms=900){const t0=performance.now();const from=0;function tick(t){const k=Math.min(1,(t-t0)/ms);const e=1-Math.pow(1-k,3);el.textContent=fE(Math.round(from+(to-from)*e));if(k<1)requestAnimationFrame(tick)}requestAnimationFrame(tick)}
+
+// ── compresión de imagen ──
+function compress(file){return new Promise(res=>{const img=new Image();img.onload=()=>{const M=760,k=Math.min(1,M/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))};img.src=URL.createObjectURL(file)})}
+async function valueImage(dataUrl){
+  try{const r=await fetch('/api/value',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});if(r.ok)return await r.json()}catch(e){}
+  return null;
+}
+
+// ── DEMO sin cuenta (el momento wow) ──
+async function demoScan(files){
+  if(!files||!files.length)return;
+  const el=$('demo-result');
+  el.innerHTML='<div class="card" style="padding:18px;display:flex;gap:14px;align-items:center;max-width:420px"><span class="spin"></span><div style="font-size:14px;color:var(--t2)">La IA está mirando tu objeto…</div></div>';
+  const dataUrl=await compress(files[0]);
+  const v=await valueImage(dataUrl);
+  if(!v||!v.nombre){el.innerHTML='<div class="card" style="padding:18px;max-width:420px;font-size:14px;color:var(--t2)">No he podido identificarlo — prueba con otra foto con buena luz.</div>';return}
+  const mid=Math.round(((+v.valor_min||0)+(+v.valor_max||0))/2);
+  try{localStorage.setItem('vaci_pending',JSON.stringify({foto:dataUrl,...v}))}catch(e){}
+  el.innerHTML=`<div class="card" style="padding:18px;display:flex;gap:14px;align-items:center;max-width:440px;animation:in .3s var(--ease)">
+    <img src="${dataUrl}" style="width:72px;height:72px;object-fit:cover;border-radius:11px" alt="">
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:15px;color:var(--t1)">${escH(v.nombre)}</div>
+      <div style="font-size:12.5px;color:var(--t2)">${escH(v.categoria||'')}</div>
+      <div class="num" id="demo-val" style="font-size:21px;font-weight:800;color:var(--acc-d);margin-top:3px">0 €</div>
+    </div>
+  </div>
+  <button class="btn btn-p" style="margin-top:14px" onclick="authMode='signup';renderAuth();show('s-auth')">Guardar mi hallazgo → crear cuenta</button>`;
+  countUp($('demo-val'),mid||0);
+  $('demo-cam').value='';
+}
+
+// ── Auth ──
+function renderAuth(){
+  const su=authMode==='signup';
+  $('auth-title').textContent=su?'Crea tu cuenta':'Hola de nuevo';
+  $('auth-sub').textContent=su?'Gratis. Tu inventario te espera.':'Accede a tus espacios.';
+  $('auth-btn').textContent=su?'Crear cuenta':'Acceder';
+  $('auth-sw-txt').textContent=su?'¿Ya tienes cuenta?':'¿Aún no tienes cuenta?';
+  $('auth-sw').textContent=su?'Accede':'Créala gratis';
+  let pend=null;try{pend=JSON.parse(localStorage.getItem('vaci_pending'))}catch(e){}
+  $('auth-pending').innerHTML=pend?`<div style="display:flex;gap:10px;align-items:center;background:var(--acc-soft);border-radius:13px;padding:10px 13px;margin-bottom:18px">
+    <img src="${pend.foto}" style="width:40px;height:40px;border-radius:8px;object-fit:cover" alt="">
+    <div style="font-size:13px;color:var(--acc-d);font-weight:600">Tu ${escH(pend.nombre)} (${fE(((+pend.valor_min||0)+(+pend.valor_max||0))/2)}) te espera dentro ✦</div></div>`:'';
+}
+function toggleAuth(){authMode=authMode==='signup'?'login':'signup';renderAuth()}
+async function doAuth(){
+  const email=$('a-email').value.trim(),pass=$('a-pass').value;
+  if(!email||!pass){toast('Rellena email y contraseña');return}
+  $('auth-btn').innerHTML='<span class="spin" style="border-top-color:#fff;border-color:rgba(255,255,255,.35)"></span>';
+  try{
+    let r;
+    if(authMode==='signup'){r=await sb.auth.signUp({email,password:pass});if(!r.error&&!r.data.session){r=await sb.auth.signInWithPassword({email,password:pass})}}
+    else r=await sb.auth.signInWithPassword({email,password:pass});
+    if(r.error)throw r.error;
+    user=r.data.user||r.data.session?.user;
+    if(!user)throw new Error('Revisa tu email para confirmar la cuenta');
+    await importPending();
+    show('s-home');loadHome();
+  }catch(e){toast(e.message||'No se pudo acceder')}
+  renderAuth();
+}
+async function importPending(){
+  let pend=null;try{pend=JSON.parse(localStorage.getItem('vaci_pending'))}catch(e){}
+  if(!pend)return;
+  try{
+    const {data:p}=await sb.from('vaci_proyectos').insert({user_id:user.id,nombre:'Mi primer espacio',miembros:['Yo']}).select().single();
+    await sb.from('vaci_items').insert({proyecto_id:p.id,user_id:user.id,foto:pend.foto,nombre:String(pend.nombre).slice(0,80),categoria:String(pend.categoria||'').slice(0,40),estancia:'Salón',valor_min:+pend.valor_min||0,valor_max:+pend.valor_max||0,confianza:pend.confianza||'media'});
+    localStorage.removeItem('vaci_pending');
+    toast('✦ Tu hallazgo está guardado');
+  }catch(e){}
+}
+async function logout(){await sb.auth.signOut();user=null;show('s-landing')}
+
+// ── HOME ──
+async function loadHome(){
+  const {data:projs}=await sb.from('vaci_proyectos').select('*').order('created_at',{ascending:false});
+  const {data:its}=await sb.from('vaci_items').select('valor_min,valor_max,decision');
+  const all=its||[];
+  let tot=0,nv=0,np=0;
+  all.forEach(i=>{const mid=((+i.valor_min||0)+(+i.valor_max||0))/2;tot+=mid;if(i.decision==='vender')nv++;if(!i.decision)np++});
+  countUp($('h-total'),Math.round(tot));
+  $('h-sub').textContent=all.length?`${all.length} objetos escaneados · ${nv} listos para vender`:'Escanea tu primer objeto para empezar.';
+  $('k-items').textContent=all.length;$('k-vender').textContent=nv;$('k-pend').textContent=np;
+  const el=$('proj-list');
+  if(!projs||!projs.length){el.innerHTML='<div class="card" style="padding:32px;text-align:center"><div style="font-size:28px;margin-bottom:8px">🏠</div><div style="font-weight:700;margin-bottom:5px">Crea tu primer espacio</div><div style="font-size:13px;color:var(--t2)">Un piso, un trastero, la casa del pueblo — cada espacio, su inventario.</div></div>';return}
+  el.innerHTML=projs.map(p=>{
+    const st=p.via?{rapida:['⚡ Cobro rápido en curso','var(--ink)','#fff'],maximizar:['📈 Maximizando valor','var(--acc-soft)','var(--acc-d)']}[p.via]:['Inventariando','var(--slate-soft)','var(--t2)'];
+    return `<div class="card" style="padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer" onclick="openProj('${p.id}')">
+      <div style="min-width:0">
+        <div style="font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(p.nombre)}</div>
+        <div style="font-size:12.5px;color:var(--t2);margin-top:3px">${(p.miembros||[]).length} participante${(p.miembros||[]).length===1?'':'s'}</div>
+      </div>
+      <span class="chip" style="background:${st[1]};color:${st[2]};flex-shrink:0">${st[0]}</span>
+    </div>`}).join('');
+}
+async function newProj(){
+  const n=prompt('Nombre del espacio (ej. Piso de Provença):');if(!n||!n.trim())return;
+  const {data,error}=await sb.from('vaci_proyectos').insert({user_id:user.id,nombre:n.trim().slice(0,80),miembros:['Yo']}).select().single();
+  if(error){toast('No se pudo crear');return}
+  openProj(data.id,data);
+}
+
+// ── PROYECTO ──
+async function openProj(id,row){
+  if(!row){const {data}=await sb.from('vaci_proyectos').select('*').eq('id',id).single();row=data}
+  proj=row;activeMember=(proj.miembros||['Yo'])[0];curRoom='Salón';
+  const {data:its}=await sb.from('vaci_items').select('*').eq('proyecto_id',id).order('created_at',{ascending:false});
+  items=its||[];
+  show('s-proj');renderProj();
+}
+function projTotals(){
+  let a=0,b=0,sellA=0,sellB=0,nSell=0;
+  items.forEach(i=>{a+=+i.valor_min||0;b+=+i.valor_max||0;if(i.decision==='vender'){sellA+=+i.valor_min||0;sellB+=+i.valor_max||0;nSell++}});
+  return{a,b,sellA,sellB,nSell};
+}
+function renderProj(){
+  const t=projTotals();
+  $('p-head').innerHTML=`
+    <h2 style="font-size:25px;font-weight:800;letter-spacing:-.02em">${escH(proj.nombre)}</h2>
+    <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
+      <div class="card" style="padding:12px 18px;min-width:130px"><div style="font-size:11px;color:var(--t2);font-weight:700;text-transform:uppercase;letter-spacing:.6px">Valor descubierto</div><div class="num" style="font-size:21px;font-weight:800;color:var(--acc-d)">${t.a||t.b?fE(t.a)+' – '+fE(t.b):'—'}</div></div>
+      <div class="card" style="padding:12px 18px"><div style="font-size:11px;color:var(--t2);font-weight:700;text-transform:uppercase;letter-spacing:.6px">Objetos</div><div class="num" style="font-size:21px;font-weight:800">${items.length}</div></div>
+    </div>`;
+  // miembros
+  const mems=proj.miembros||['Yo'];
+  $('p-members').innerHTML=`<span style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-right:2px">Decides como:</span>`+
+    mems.map(m=>`<button class="mem ${m===activeMember?'on':''}" onclick="activeMember='${escH(m)}';renderProj()">${escH(m)}</button>`).join('')+
+    `<button class="mem" style="border-style:dashed" onclick="addMember()">+ Añadir</button>`;
+  // estancias
+  $('p-rooms').innerHTML=ROOMS.map(r=>{
+    const n=items.filter(i=>i.estancia===r).length;
+    return `<button class="mem ${r===curRoom?'on':''}" onclick="curRoom='${r}';renderProj()">${r}${n?` · ${n}`:''}</button>`}).join('');
+  $('cur-room-lbl').textContent=curRoom;
+  // items de la estancia
+  const list=items.filter(i=>i.estancia===curRoom);
+  $('p-items').innerHTML=list.length?list.map(i=>itemHtml(i)).join(''):`<div style="text-align:center;padding:26px;color:var(--t3);font-size:13.5px">Nada en ${escH(curRoom)} todavía. Escanea el primer objeto.</div>`;
+  // CTA
+  $('p-cta').innerHTML=t.nSell>0?`<button class="btn btn-p" style="width:100%" onclick="goVias()">Convertir ${t.nSell} objeto${t.nSell===1?'':'s'} en dinero → ${fE((t.sellA+t.sellB)/2)}</button>`
+    :(items.length?`<div style="text-align:center;font-size:13px;color:var(--t3)">Marca objetos como <b>Vender</b> para ver tus dos caminos al dinero.</div>`:'');
+}
+function confChip(c){
+  const m={alta:['Confianza alta','var(--acc-soft)','var(--acc-d)'],media:['Confianza media','var(--amber-soft)','var(--amber)'],baja:['Revisar precio','var(--rose-soft)','var(--rose)']}[c||'media'];
+  return `<span class="chip" style="background:${m[1]};color:${m[2]};font-size:10.5px;padding:3px 9px">${m[0]}</span>`;
+}
+function votesOf(i,dec){const v=(i.votos||{})[dec]||[];return v.length?`<span class="avs">${v.map(n=>`<span>${escH(String(n).slice(0,2).toUpperCase())}</span>`).join('')}</span>`:''}
+function itemHtml(i){
+  const coms=(i.comentarios||[]);
+  return `<div class="itemrow">
+    ${i.foto?`<img src="${i.foto}" alt="">`:`<div style="width:80px;height:80px;border-radius:11px;background:var(--slate-soft);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">📦</div>`}
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start">
+        <div style="font-weight:700;font-size:14.5px;cursor:pointer" onclick="openEdit('${i.id}')">${escH(i.nombre)} <span style="color:var(--t3);font-weight:400;font-size:12px">✎</span></div>
+        <button onclick="delItem('${i.id}')" style="background:none;color:var(--t3);font-size:17px;padding:0 4px">×</button>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;margin-top:3px;flex-wrap:wrap">
+        <span class="num" style="font-size:14px;font-weight:800;color:var(--acc-d)">${fE(i.valor_min)} – ${fE(i.valor_max)}</span>
+        ${confChip(i.confianza)}
+      </div>
+      <div class="seg" style="margin-top:9px">
+        ${Object.entries(DEC).map(([k,d])=>`<button class="${i.decision===k?d.cls:''}" onclick="vote('${i.id}','${k}')">${d.l}${votesOf(i,k)}</button>`).join('')}
+      </div>
+      ${coms.length?`<div style="margin-top:8px;font-size:12px;color:var(--t2);background:var(--slate-soft);border-radius:9px;padding:7px 10px">💬 <b>${escH(coms[coms.length-1].de)}:</b> ${escH(coms[coms.length-1].txt)}</div>`:''}
+    </div>
+  </div>`;
+}
+async function addMember(){
+  const n=prompt('Nombre del participante (ej. Marta):');if(!n||!n.trim())return;
+  const mems=[...(proj.miembros||['Yo']),n.trim().slice(0,20)];
+  await sb.from('vaci_proyectos').update({miembros:mems}).eq('id',proj.id);
+  proj.miembros=mems;renderProj();toast(n.trim()+' puede votar ya');
+}
+async function vote(id,dec){
+  const i=items.find(x=>x.id===id);if(!i)return;
+  const votos=i.votos||{};
+  Object.keys(votos).forEach(k=>{votos[k]=(votos[k]||[]).filter(n=>n!==activeMember)});
+  votos[dec]=[...(votos[dec]||[]),activeMember];
+  // mayoría decide
+  const mems=(proj.miembros||['Yo']).length;
+  let best=null,bn=0;Object.entries(votos).forEach(([k,v])=>{if(v.length>bn){bn=v.length;best=k}});
+  const decision=(bn>=Math.ceil(mems/2))?best:(mems===1?dec:i.decision);
+  i.votos=votos;i.decision=decision;
+  renderProj();
+  await sb.from('vaci_items').update({votos,decision}).eq('id',id);
+}
+async function delItem(id){
+  if(!confirm('¿Eliminar este objeto?'))return;
+  await sb.from('vaci_items').delete().eq('id',id);
+  items=items.filter(i=>i.id!==id);renderProj();
+}
+
+// ── edición ──
+function openEdit(id){editItem=items.find(i=>i.id===id);if(!editItem)return;
+  $('e-nombre').value=editItem.nombre||'';$('e-min').value=editItem.valor_min||'';$('e-max').value=editItem.valor_max||'';$('e-coment').value='';
+  const m=$('m-edit');m.style.display='flex';requestAnimationFrame(()=>m.classList.add('on'));
+}
+function closeEdit(){const m=$('m-edit');m.classList.remove('on');setTimeout(()=>m.style.display='none',220);editItem=null}
+async function saveEdit(){
+  if(!editItem)return;
+  const upd={nombre:$('e-nombre').value.trim().slice(0,80)||editItem.nombre,
+    valor_min:Math.max(0,Math.min(999999,+$('e-min').value||0)),
+    valor_max:Math.max(0,Math.min(999999,+$('e-max').value||0)),
+    confianza:'alta'};
+  const c=$('e-coment').value.trim();
+  if(c)upd.comentarios=[...(editItem.comentarios||[]),{de:activeMember,txt:c.slice(0,200)}];
+  Object.assign(editItem,upd);
+  closeEdit();renderProj();
+  await sb.from('vaci_items').update(upd).eq('id',editItem ? editItem.id : upd.id);
+}
+
+// ── escaneo IA ──
+async function onPhotos(files){
+  if(!files||!files.length)return;
+  for(const f of files){
+    if(f.size>15*1024*1024){toast('Foto demasiado grande');continue}
+    const ph=document.createElement('div');ph.className='itemrow';
+    ph.innerHTML='<div style="width:80px;height:80px;border-radius:11px;background:var(--slate-soft);display:flex;align-items:center;justify-content:center"><span class="spin"></span></div><div style="font-size:13.5px;color:var(--t2);align-self:center">La IA está catalogando…</div>';
+    $('p-items').prepend(ph);
+    try{
+      const dataUrl=await compress(f);
+      let v=await valueImage(dataUrl);
+      if(!v||!v.nombre){v={nombre:'Objeto por identificar',categoria:'Revisar',valor_min:0,valor_max:0,confianza:'baja'};toast('No pude tasarlo — tócalo para editarlo')}
+      const {data,error}=await sb.from('vaci_items').insert({
+        proyecto_id:proj.id,user_id:user.id,foto:dataUrl,estancia:curRoom,
+        nombre:String(v.nombre).slice(0,80),categoria:String(v.categoria||'').slice(0,40),
+        valor_min:Math.max(0,Math.min(999999,+v.valor_min||0)),valor_max:Math.max(0,Math.min(999999,+v.valor_max||0)),
+        confianza:['alta','media','baja'].includes(v.confianza)?v.confianza:'media'
+      }).select().single();
+      if(error)throw error;
+      items.unshift(data);ph.remove();renderProj();
+      const mid=Math.round(((+v.valor_min||0)+(+v.valor_max||0))/2);
+      if(mid>0)toast(`✦ +${fE(mid)} descubiertos`);
+    }catch(e){ph.remove();toast('Error guardando el objeto')}
+  }
+  $('cam').value='';
+}
+
+// ── caminos ──
+function goVias(){
+  const t=projTotals(),mid=(t.sellA+t.sellB)/2;
+  $('v-n').textContent=t.nSell;$('v-base').textContent=fE(Math.round(mid));
+  $('v-barfill').style.width='0%';setTimeout(()=>$('v-barfill').style.width='100%',60);
+  $('o-rapida').textContent=fE(Math.round(mid*0.4));
+  $('o-max').textContent='~'+fE(Math.round(mid*0.72));
+  selVia_=null;$('via-r').classList.remove('sel');$('via-m').classList.remove('sel');
+  const b=$('via-btn');b.disabled=true;b.style.opacity=.45;b.textContent='Elige un camino';
+  show('s-vias');
+}
+function selVia(v){
+  selVia_=v;
+  $('via-r').classList.toggle('sel',v==='rapida');
+  $('via-m').classList.toggle('sel',v==='maximizar');
+  const b=$('via-btn');b.disabled=false;b.style.opacity=1;
+  b.textContent=v==='rapida'?'Solicitar oferta en firme →':'Empezar a maximizar →';
+}
+async function confirmVia(){
+  if(!selVia_)return;
+  const t=projTotals(),mid=(t.sellA+t.sellB)/2;
+  const oferta=Math.round(mid*(selVia_==='rapida'?0.4:0.72));
+  await sb.from('vaci_proyectos').update({via:selVia_,oferta}).eq('id',proj.id);
+  proj.via=selVia_;
+  renderDone(oferta);show('s-done');
+}
+function renderDone(oferta){
+  const t=projTotals();
+  const nDon=items.filter(i=>i.decision==='donar').length,nRec=items.filter(i=>i.decision==='reciclar').length,nCon=items.filter(i=>i.decision==='conservar').length;
+  $('done-sub').textContent=selVia_==='rapida'?'Te llamamos en menos de 24h con la oferta en firme.':'Empezamos a vender por ti. Cada venta aparecerá aquí.';
+  $('done-card').innerHTML=`
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">${selVia_==='rapida'?'Oferta estimada':'Estimado a recuperar'}</div>
+      <div class="num" id="done-num" style="font-size:44px;font-weight:800;letter-spacing:-.03em;color:var(--acc-d)">0 €</div>
+      <div style="font-size:12.5px;color:var(--t2)">${selVia_==='rapida'?'cobro en 48 horas':'en 2–8 semanas'}</div>
+    </div>
+    <div style="border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center">
+      <div><div class="num" style="font-size:19px;font-weight:800">${t.nSell}</div><div style="font-size:11px;color:var(--t2);font-weight:600">a vender</div></div>
+      <div><div class="num" style="font-size:19px;font-weight:800;color:var(--blue)">${nCon}</div><div style="font-size:11px;color:var(--t2);font-weight:600">conservados</div></div>
+      <div><div class="num" style="font-size:19px;font-weight:800;color:var(--amber)">${nDon}</div><div style="font-size:11px;color:var(--t2);font-weight:600">donados</div></div>
+      <div><div class="num" style="font-size:19px;font-weight:800;color:#64748B">${nRec}</div><div style="font-size:11px;color:var(--t2);font-weight:600">reciclados</div></div>
+    </div>
+    <div style="margin-top:14px;font-size:12px;color:var(--t2);text-align:center;background:var(--acc-soft);border-radius:11px;padding:9px">♻️ ~${(nDon+nRec)*8} kg desviados del vertedero (estimación)</div>`;
+  countUp($('done-num'),oferta,1100);
+}
+async function shareReport(){
+  const t=projTotals();
+  const txt=`Acabo de descubrir ${fE(Math.round((t.a+t.b)/2))} escondidos en ${proj.nombre} con Vaci 🤯 — escanea tu casa: ${location.origin}`;
+  if(navigator.share){try{await navigator.share({text:txt})}catch(e){}}
+  else{try{await navigator.clipboard.writeText(txt);toast('Copiado — pégalo donde quieras')}catch(e){}}
+}
+
+// ── init ──
+window.addEventListener('load',async()=>{
+  sb=window.supabase.createClient(SB_URL,SB_KEY);
+  const {data}=await sb.auth.getSession();
+  if(data&&data.session){user=data.session.user;await importPending();show('s-home');loadHome()}
+});
+</script>
+</body>
+</html>
